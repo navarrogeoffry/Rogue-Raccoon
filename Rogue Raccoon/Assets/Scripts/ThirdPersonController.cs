@@ -1,61 +1,65 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
+using Vector3 = UnityEngine.Vector3;
 
 public class ThirdPersonController : MonoBehaviour
 {
     public CharacterController controller;
-    public Transform cam;
-
-    public float speed = 6f;
-    public float gravity = -9.81f;
-    public float jumpHeight = 3f;
-
-    public Transform groundCheck;
-    public float groundDistance = 0.4f;
-    public LayerMask groundMask;
-    bool isGrounded;
-
-    public float turnSmoothTime = 0.1f;
-    float turnSmoothVelocity;
-
+    float horziontalInput, verticalInput;
+    public float moveSpeed = 5;
+    [HideInInspector] public Vector3 direction;
+    [SerializeField] float groundYOffset;
+    [SerializeField] LayerMask groundMask;
+    [SerializeField] float gravity = -10f;
     Vector3 velocity;
+    Vector3 spherePos;
 
+
+    void Start()
+    {
+        controller = GetComponent<CharacterController>();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        CharacterMovement();
+        Gravity();
+    }
 
-        float horziontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horziontal, 0f, vertical).normalized;
+    void CharacterMovement() {
+        float horziontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
 
-        if (isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f;
+        direction = transform.forward * verticalInput + transform.right * horziontalInput;
+
+        controller.Move(direction * moveSpeed * Time.deltaTime);
+
+    }
+
+    bool IsGrounded()
+    {
+        spherePos = new Vector3(transform.position.x, transform.position.y - groundYOffset, transform.position.z);
+        if (Physics.CheckSphere(spherePos, controller.radius - 0.05f, groundMask)){
+            return true;
+        } else {
+            return false; 
         }
+    }
 
-        if (direction.magnitude >= 0.1f)
-        {
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-            Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDirection.normalized * speed * Time.deltaTime);
-
+    void Gravity()
+    {
+        if (!IsGrounded()) {
             velocity.y += gravity * Time.deltaTime;
-
-            controller.Move(velocity * Time.deltaTime);
+        } else if (velocity.y < 0) {
+            velocity.y = -2;
         }
-        velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
-
-        if(Input.GetButtonDown("Jump") && isGrounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
     }
 }

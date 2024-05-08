@@ -1,37 +1,44 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
+using System;
+using UnityEngine.Animations;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
-    public Transform orientation;
-    public Transform player;
-    public Transform playerObject;
-    public Rigidbody rb;
+    private float xAxis, yAxis;
+    [SerializeField] Transform camFollowPos;
+    [SerializeField] float mouseSense = 1;
+    [SerializeField] Transform aimPos;
+    [SerializeField] float aimSmoothSpeed = 20;
+    [SerializeField] LayerMask aimMask;
 
-    public float rotationSpeed;
-    
     // Start is called before the first frame update
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Rotate Camera Orientation
-        Vector3 viewDirection = player.position - new Vector3(transform.position.x, transform.position.y, transform.position.z);
-        orientation.forward = viewDirection.normalized;
+        xAxis += Input.GetAxisRaw("Mouse X") * mouseSense;
+        yAxis -= Input.GetAxisRaw("Mouse Y") * mouseSense;
+        yAxis = Mathf.Clamp(yAxis, -80, 80);
 
-        //Rotate Player Object
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+        Ray ray = Camera.main.ScreenPointToRay(screenCenter);
 
-        Vector3 inputDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if(Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, aimMask))
+        {
+            aimPos.position = Vector3.Lerp(aimPos.position, hit.point, aimSmoothSpeed * Time.deltaTime);
+        }
+    }
 
-        if (inputDirection != Vector3.zero)
-            player.forward = Vector3.Lerp(playerObject.forward, inputDirection.normalized, Time.deltaTime * rotationSpeed);
+    private void LateUpdate()
+    {
+        camFollowPos.localEulerAngles = new Vector3(yAxis, camFollowPos.localEulerAngles.y, camFollowPos.localEulerAngles.z);
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, xAxis, transform.eulerAngles.z);
     }
 }
