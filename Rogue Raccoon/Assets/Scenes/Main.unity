@@ -2274,6 +2274,7 @@ GameObject:
   - component: {fileID: 249773181}
   - component: {fileID: 249773183}
   - component: {fileID: 249773184}
+  - component: {fileID: 249773185}
   m_Layer: 7
   m_Name: Weapon
   m_TagString: Untagged
@@ -2461,6 +2462,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &249773185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 249773178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d442a80c0cb12d841b7948c66b60c0d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseAmmoCount: 30
+  spareAmmoCount: 120
+  currentAmmo: 0
 --- !u!1 &250023632
 GameObject:
   m_ObjectHideFlags: 0
@@ -12832,7 +12848,7 @@ MonoBehaviour:
   groundDistance: 0.4
   groundCheck: {fileID: 1863447602}
   gravity: -20
-  jumpHeight: 3
+  jumpHeight: 2
 --- !u!143 &1311871718
 CharacterController:
   m_ObjectHideFlags: 0
