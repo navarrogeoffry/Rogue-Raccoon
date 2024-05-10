@@ -19,6 +19,9 @@ public class Shooting : MonoBehaviour
     [SerializeField] AudioClip weaponFire;
     AudioSource audioSource;
 
+    [Header("Camera Reference")]
+    [SerializeField] Camera mainCamera;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,12 +46,12 @@ public class Shooting : MonoBehaviour
 
         for (int i = 0; i < projectilesPerShot; i ++)
         {
-            GameObject Instatiatedprojectile = Instantiate(projectile, shootingPos.position, shootingPos.rotation);
+            GameObject Instatiatedprojectile = Instantiate(projectile, shootingPos.position, mainCamera.transform.rotation);
             Rigidbody projectileRb = Instatiatedprojectile.GetComponent<Rigidbody>();
 
             if (projectileRb != null)
             {
-                projectileRb.velocity = shootingPos.forward * projectileVelocity;
+                projectileRb.velocity = mainCamera.transform.forward * projectileVelocity;
             }
         }
 

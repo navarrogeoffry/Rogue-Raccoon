@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Lumin;
 using UnityEngine.TextCore.Text;
 using Vector3 = UnityEngine.Vector3;
 
@@ -13,11 +15,14 @@ public class ThirdPersonController : MonoBehaviour
     float horziontalInput, verticalInput;
     public float moveSpeed = 5;
     [HideInInspector] public Vector3 direction;
-    [SerializeField] float groundYOffset;
     [SerializeField] LayerMask groundMask;
-    [SerializeField] float gravity = -10f;
+    public float groundDistance = 0.4f;
+    public Transform groundCheck;
+    [SerializeField] float gravity = -20f;
+    [SerializeField] float jumpHeight = 3f;
     Vector3 velocity;
     Vector3 spherePos;
+    bool IsGrounded;
 
 
     void Start()
@@ -29,37 +34,34 @@ public class ThirdPersonController : MonoBehaviour
     void Update()
     {
         CharacterMovement();
+        Jump();
         Gravity();
     }
 
     void CharacterMovement() {
-        float horziontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
+        horziontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
 
         direction = transform.forward * verticalInput + transform.right * horziontalInput;
 
         controller.Move(direction * moveSpeed * Time.deltaTime);
-
     }
 
-    bool IsGrounded()
-    {
-        spherePos = new Vector3(transform.position.x, transform.position.y - groundYOffset, transform.position.z);
-        if (Physics.CheckSphere(spherePos, controller.radius - 0.05f, groundMask)){
-            return true;
-        } else {
-            return false; 
+    void Jump(){
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded) {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
-    }
+    }  
 
     void Gravity()
     {
-        if (!IsGrounded()) {
+        IsGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        if (!IsGrounded) {
             velocity.y += gravity * Time.deltaTime;
         } else if (velocity.y < 0) {
-            velocity.y = -2;
+            velocity.y = -2f;
         }
 
         controller.Move(velocity * Time.deltaTime);
-    }
+    }   
 }
